@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "798582055194",
+    "project_id": "checkup-f6ce4",
+    "storage_bucket": "checkup-f6ce4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798582055194:android:cad9168a5cd6f276f7cca3",
+        "android_client_info": {
+          "package_name": "com.example.checkup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798582055194-78b93m32bj16srkv8fav32ti3est2etj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6CtFno1yu3DTJkmZiTP7il9sZpdVBr2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798582055194-78b93m32bj16srkv8fav32ti3est2etj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
