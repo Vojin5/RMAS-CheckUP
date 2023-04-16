@@ -4,9 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase firebaseDatabase;
     FirebaseAuth auth;
 
+    CheckBox rememberMeBox;
+
     TextInputEditText emailTxt;
     TextInputEditText passwordTxt;
     MaterialButton loginBtn;
@@ -38,10 +42,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViews();
-        //FIREBASE SETUP
-        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
-        signupBtn.setOnClickListener(this::signupClick);
-        loginBtn.setOnClickListener(this::loginClick);
+        setListeners();
+        setFirebase();
+        checkRememberMe();
+
     }
 
     public void loginClick(View view)
@@ -56,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = auth.getCurrentUser();
+                            if(rememberMeBox.isChecked())
+                            {
+                                addRemember();
+                            }
                             Toast.makeText(MainActivity.this, "Welcome " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
                         } else {
                             // If sign in fails, display a message to the user.
@@ -73,11 +81,51 @@ public class MainActivity extends AppCompatActivity {
         signupBtn = findViewById(R.id.signup);
         emailTxt = findViewById(R.id.email);
         passwordTxt = findViewById(R.id.password);
+        rememberMeBox = findViewById(R.id.rememberMe);
     }
 
     private void signupClick(View view)
     {
         Intent intent = new Intent(MainActivity.this,SignupPage.class);
         startActivity(intent);
+    }
+
+    public void addRemember()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences("remember",MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("remember","true");
+        editor.apply();
+    }
+
+    public void setFirebase()
+    {
+        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+    }
+
+    private void setListeners()
+    {
+        signupBtn.setOnClickListener(this::signupClick);
+        loginBtn.setOnClickListener(this::loginClick);
+    }
+
+    public void closeRemember()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences("remember",MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("remember","false");
+        editor.apply();
+    }
+
+    public void checkRememberMe()
+    {
+        SharedPreferences sharedPreferences = getSharedPreferences("remember",MODE_PRIVATE);
+        String checked = sharedPreferences.getString("remember","");
+        if(checked.equals("true"))
+        {
+            Intent intent = new Intent(MainActivity.this,MainPage.class);
+            startActivity(intent);
+        }
+
     }
 }

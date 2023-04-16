@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -54,11 +55,8 @@ public class SignupPage extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_page);
         findViews();
-        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
-        auth = FirebaseAuth.getInstance();
-        createBtn.setOnClickListener(this::createClick);
-        image.setOnClickListener(this::imageClick);
-        cancelBtn.setOnClickListener(this::cancelClick);
+        setListeners();
+
     }
 
     private void cancelClick(View view)
@@ -138,6 +136,13 @@ public class SignupPage extends AppCompatActivity{
         }
         return false;
     }
+
+
+    private void setFirebase()
+    {
+        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+        auth = FirebaseAuth.getInstance();
+    }
     private void findViews()
     {
         createBtn = findViewById(R.id.signup_create);
@@ -147,5 +152,14 @@ public class SignupPage extends AppCompatActivity{
         usernameTxt = findViewById(R.id.signup_username);
         image = findViewById(R.id.userImage);
     }
+
+    public void setListeners()
+    {
+        createBtn.setOnClickListener(this::createClick);
+        image.setOnClickListener(this::imageClick);
+        cancelBtn.setOnClickListener(this::cancelClick);
+    }
+
+
 
 }

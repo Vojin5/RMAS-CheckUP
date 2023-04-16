@@ -29,6 +29,7 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
+        android:backgroundTint="@color/black"
         android:inputType="textShortMessage"
         android:hint="@string/email"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,6 +47,7 @@
         android:layout_marginEnd="32dp"
         android:gravity="center"
         android:hint="@string/password"
+        android:backgroundTint="@color/black"
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -62,28 +64,43 @@
         android:src="@drawable/checked"
         />
 
+    <CheckBox
+        android:id="@+id/rememberMe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/remember_me"
+        app:layout_constraintTop_toBottomOf="@id/password"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/black"
+        android:buttonTint="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/login"/>
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/login"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/log_in"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="#001d3d"
+        android:text="@string/log_in"
+        app:cornerRadius="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/signup"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/signup"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/sign_up"
+        android:layout_marginBottom="32dp"
         android:backgroundTint="#001d3d"
+        android:text="@string/sign_up"
+        app:cornerRadius="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
