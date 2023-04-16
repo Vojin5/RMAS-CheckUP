@@ -1,130 +1,151 @@
 package com.example.checkup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.BoringLayout;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.ktx.Firebase;
 
 public class SignupPage extends AppCompatActivity{
+    private static final String TAG = "SignupPage";
 
+    public static final int PICK_IMAGE = 1;
     FirebaseDatabase firebaseDatabase;
-    TextInputEditText email;
-    TextInputEditText password;
-    TextInputEditText username;
+    Uri imageURI;
+    FirebaseAuth auth;
 
-    String usernameStr;
-    String emailStr;
-    String passwordStr;
+    ImageView image;
+    TextInputEditText emailTxt;
+    TextInputEditText passwordTxt;
+    TextInputEditText usernameTxt;
 
-    MaterialButton create;
-    MaterialButton cancel;
-    User user;
+    String username;
+    String email;
+    String password;
+
+    MaterialButton createBtn;
+    MaterialButton cancelBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_page);
         findViews();
         firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
-        create.setOnClickListener(this::createClick);
+        auth = FirebaseAuth.getInstance();
+        createBtn.setOnClickListener(this::createClick);
+        image.setOnClickListener(this::imageClick);
+        cancelBtn.setOnClickListener(this::cancelClick);
+    }
+
+    private void cancelClick(View view)
+    {
+        finish();
+    }
+
+    private void imageClick(View view)
+    {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            imageURI = data.getData();
+            image.setImageURI(imageURI);
+        }
     }
 
     private void createClick(View view)
     {
-        this.emailStr = email.getText().toString();
-        this.passwordStr = password.getText().toString();
-        this.usernameStr = username.getText().toString();
+        username = usernameTxt.getText().toString();
+        email = emailTxt.getText().toString();
+        password = passwordTxt.getText().toString();
 
-        //Check if there is empty fields
-        if(isEmpty(emailStr) || isEmpty(passwordStr) || isEmpty(usernameStr))
+        if(isEmpty(username,"username"))
         {
-            Toast.makeText(this, "Some field is empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        //User is ready to be added if username and mail are free
-        user = new User(emailStr,passwordStr);
-        checkUsernameAndEmail();
-
-    }
-
-    private void checkUsernameAndEmail()
-    {
-        firebaseDatabase.getReference()
-                .child("users")
-                .orderByKey()
-                .equalTo(usernameStr)
-                .get()
-                .addOnSuccessListener(this::usersOnSuccess);
-    }
-
-    private void usersOnSuccess(DataSnapshot snapshot)
-    {
-        if(snapshot.exists())
+        if(isEmpty(email,"email"))
         {
-            Toast.makeText(SignupPage.this, "Username already exists", Toast.LENGTH_SHORT).show();
+            return;
         }
-        else{
-            checkEmail();
-        }
-    }
-
-    private void checkEmail()
-    {
-        firebaseDatabase.getReference()
-                .child("users")
-                .get()
-                .addOnSuccessListener(this::emailOnSuccess);
-
-    }
-
-    private void emailOnSuccess(DataSnapshot snapshot)
-    {
-        boolean used = false;
-        for(DataSnapshot dataSnapshot : snapshot.getChildren())
+        if(isEmpty(password,"password"))
         {
-            User tmp = dataSnapshot.getValue(User.class);
-            if(tmp.getEmail().equals(emailStr))
-            {
-                Toast.makeText(SignupPage.this, "Mail is already in use", Toast.LENGTH_SHORT).show();
-                used = true;
-                break;
-            }
+            return;
         }
-        if(used == false)
+
+        auth.createUserWithEmailAndPassword(email,password)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful())
+                        {
+                            FirebaseUser user = auth.getCurrentUser();
+                            UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(username)
+                                    .setPhotoUri(imageURI)
+                                    .build();
+                            user.updateProfile(request);
+                            Toast.makeText(SignupPage.this, "Account created", Toast.LENGTH_SHORT).show();
+
+                        }
+                        else{
+                            Log.w(TAG, "signInWithEmail:failure", task.getException());
+                            Toast.makeText(SignupPage.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                });
+
+    }
+
+
+    private boolean isEmpty(String str,String name)
+    {
+        if(TextUtils.isEmpty(str))
         {
-            addUser();
+            Toast.makeText(this, "Enter" + name, Toast.LENGTH_SHORT).show();
+            return true;
         }
+        return false;
     }
-
-    private void addUser()
-    {
-        firebaseDatabase.getReference().child("users").child(usernameStr).setValue(user);
-        Toast.makeText(this, "User created", Toast.LENGTH_SHORT).show();
-    }
-
-    public Boolean isEmpty(String str)
-    {
-        return TextUtils.isEmpty(str);
-    }
-
     private void findViews()
     {
-        create = findViewById(R.id.signup_create);
-        cancel = findViewById(R.id.signup_cancel);
-        email = findViewById(R.id.signup_email);
-        password = findViewById(R.id.signup_password);
-        username = findViewById(R.id.signup_username);
+        createBtn = findViewById(R.id.signup_create);
+        cancelBtn = findViewById(R.id.signup_cancel);
+        emailTxt = findViewById(R.id.signup_email);
+        passwordTxt = findViewById(R.id.signup_password);
+        usernameTxt = findViewById(R.id.signup_username);
+        image = findViewById(R.id.userImage);
     }
 
 }

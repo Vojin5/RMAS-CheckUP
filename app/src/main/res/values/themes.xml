@@ -13,4 +13,8 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name="edit_text" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
+
+    </style>
 </resources>

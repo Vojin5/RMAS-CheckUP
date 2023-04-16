@@ -10,4 +10,5 @@
     <string name="create">Create</string>
     <string name="cancel">Cancel</string>
     <string name="sign_up">Sign UP</string>
+    <string name="profile_image">PROFILE_IMAGE</string>
 </resources>
