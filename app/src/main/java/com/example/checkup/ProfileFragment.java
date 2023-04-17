@@ -1,12 +1,30 @@
 package com.example.checkup;
 
+import android.app.Dialog;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.ktx.Firebase;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -14,6 +32,19 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class ProfileFragment extends Fragment {
+    private static final String PHONE_DB_NAME = "PhoneNumbers";
+
+    MaterialButton addPhoneBtn;
+    FirebaseAuth auth;
+
+    FirebaseDatabase firebaseDatabase;
+
+    TextView nameTxt;
+    TextView emailTxt;
+    TextView phoneTxt;
+    TextView pointsTxt;
+    ImageView profileIMG;
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -53,12 +84,109 @@ public class ProfileFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        setFirebase();
+        FirebaseUser user = auth.getCurrentUser();
+        findViews(view);
+        setUI(user);
+
+
+
+        addPhoneBtn.setOnClickListener(this::showPhoneDialog);
+        return view;
     }
+
+    private void setUI(FirebaseUser user)
+    {
+        String name = user.getDisplayName();
+        String mail = user.getEmail();
+        Uri imageURI = user.getPhotoUrl();
+
+        nameTxt.setText(name);
+        emailTxt.setText(mail);
+
+        DatabaseReference reference = firebaseDatabase.getReference();
+        reference.child(PHONE_DB_NAME)
+                .child(user.getDisplayName())
+                .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                    @Override
+                    public void onSuccess(DataSnapshot snapshot) {
+                        if(snapshot.exists())
+                        {
+                            PhoneNumbers phone = snapshot.getValue(PhoneNumbers.class);
+                            phoneTxt.setText(phone.getPhone());
+                        }
+                        else{
+                            phoneTxt.setText("not added yet");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "Error getting number", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void findViews(View view)
+    {
+        addPhoneBtn = view.findViewById(R.id.add_number_btn);
+        nameTxt = view.findViewById(R.id.name_display);
+        emailTxt = view.findViewById(R.id.email_display);
+        phoneTxt = view.findViewById(R.id.phone_display);
+        pointsTxt = view.findViewById(R.id.point_display);
+        profileIMG = view.findViewById(R.id.profile_image);
+    }
+
+    private void showPhoneDialog(View view)
+    {
+        Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.phone_dialog);
+
+        TextInputEditText phoneTxt = dialog.findViewById(R.id.phone_input);
+        MaterialButton applyBtn = dialog.findViewById(R.id.dialog_apply);
+        MaterialButton cancelBtn = dialog.findViewById(R.id.dialog_cancel);
+
+        applyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String phone = phoneTxt.getText().toString();
+                FirebaseUser user = auth.getCurrentUser();
+                String name = user.getDisplayName();
+                String id = user.getUid();
+                PhoneNumbers newPhone = new PhoneNumbers(phone,id);
+                DatabaseReference reference = firebaseDatabase.getReference();
+                reference.child(PHONE_DB_NAME).child(name).setValue(newPhone);
+                Toast.makeText(getContext(), "Phone added", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            }
+        });
+
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+
+    private void setFirebase()
+    {
+        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+        auth = FirebaseAuth.getInstance();
+    }
+
+
 }

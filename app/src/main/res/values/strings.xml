@@ -17,4 +17,12 @@
     <string name="home">home</string>
     <string name="map">map</string>
     <string name="profile">profile</string>
+    <string name="your_email">Your Email:</string>
+    <string name="youremail">Youremail</string>
+    <string name="yourname">Yourname</string>
+    <string name="your_name">Your Name :</string>
+    <string name="your_points">Your Points:</string>
+    <string name="yourphone">Yourphone</string>
+    <string name="yourpoints">Yourpoints</string>
+    <string name="add_number">Add Number</string>
 </resources>

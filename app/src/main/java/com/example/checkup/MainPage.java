@@ -4,21 +4,33 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainPage extends AppCompatActivity implements
         BottomNavigationView.OnNavigationItemSelectedListener {
 
     BottomNavigationView navigationView;
+
+    FirebaseDatabase firebaseDatabase;
+
+    FirebaseAuth auth;
+
     MaterialToolbar toolbar;
 
     @Override
@@ -28,6 +40,7 @@ public class MainPage extends AppCompatActivity implements
 
         findViews();
         setListeners();
+        setFirebase();
         loadFragment(new HomeFragment());
         toolbar.setOnMenuItemClickListener(this::toolbarClick);
     }
@@ -59,6 +72,7 @@ public class MainPage extends AppCompatActivity implements
     private void setListeners()
     {
         navigationView.setOnNavigationItemSelectedListener(this);
+
     }
 
     private void logoutClick()
@@ -66,6 +80,8 @@ public class MainPage extends AppCompatActivity implements
         closeRemember();
         finish();
     }
+
+
 
     public void closeRemember()
     {
@@ -101,5 +117,10 @@ public class MainPage extends AppCompatActivity implements
     private void loadFragment(Fragment fragment)
     {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout,fragment).commit();
+    }
+
+    private void setFirebase()
+    {
+        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
     }
 }
