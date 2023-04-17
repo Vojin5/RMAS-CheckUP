@@ -64,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
                             {
                                 addRemember();
                             }
-                            Toast.makeText(MainActivity.this, "Welcome " + user.getDisplayName(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Welcome " + user.getDisplayName(), Toast.LENGTH_SHORT)
+                                    .show();
+                            Intent intent = new Intent(MainActivity.this,MainPage.class);
+                            startActivity(intent);
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(MainActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
@@ -109,13 +112,7 @@ public class MainActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(this::loginClick);
     }
 
-    public void closeRemember()
-    {
-        SharedPreferences sharedPreferences = getSharedPreferences("remember",MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("remember","false");
-        editor.apply();
-    }
+
 
     public void checkRememberMe()
     {

@@ -14,7 +14,9 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="edit_text" parent="ThemeOverlay.Material3.TextInputEditText.OutlinedBox">
-
+    <style name="naslov" parent="TextAppearance.Material3.ActionBar.Title">
+        <item name="fontFamily">@font/yanone_medium</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:letterSpacing">0.07</item>
     </style>
 </resources>

@@ -79,8 +79,8 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/login"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
         android:layout_marginBottom="16dp"
         android:backgroundTint="#001d3d"
         android:text="@string/log_in"
@@ -92,8 +92,8 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/signup"
-        android:layout_width="150dp"
-        android:layout_height="50dp"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
         android:layout_marginBottom="32dp"
         android:backgroundTint="#001d3d"
         android:text="@string/sign_up"

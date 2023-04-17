@@ -56,7 +56,7 @@ public class SignupPage extends AppCompatActivity{
         setContentView(R.layout.activity_signup_page);
         findViews();
         setListeners();
-
+        setFirebase();
     }
 
     private void cancelClick(View view)
@@ -113,6 +113,8 @@ public class SignupPage extends AppCompatActivity{
                                     .build();
                             user.updateProfile(request);
                             Toast.makeText(SignupPage.this, "Account created", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(SignupPage.this,MainActivity.class);
+                            startActivity(intent);
 
                         }
                         else{
