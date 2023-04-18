@@ -30,12 +30,18 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.ktx.Firebase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 public class SignupPage extends AppCompatActivity{
     private static final String TAG = "SignupPage";
 
+    private static final String PROFILE_IMG_STORAGE = "ProfileImages";
+
     public static final int PICK_IMAGE = 1;
     FirebaseDatabase firebaseDatabase;
+    FirebaseStorage storage;
     Uri imageURI;
     FirebaseAuth auth;
 
@@ -109,9 +115,25 @@ public class SignupPage extends AppCompatActivity{
                             FirebaseUser user = auth.getCurrentUser();
                             UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
-                                    .setPhotoUri(imageURI)
                                     .build();
                             user.updateProfile(request);
+                            if(imageURI != null)
+                            {
+                                StorageReference photoRef = storage.getReference();
+                                photoRef.child(PROFILE_IMG_STORAGE)
+                                        .child(username+".jpg")
+                                        .putFile(imageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                Toast.makeText(SignupPage.this, "Photo added", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(SignupPage.this, "Failed photo upload", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
                             Toast.makeText(SignupPage.this, "Account created", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(SignupPage.this,MainActivity.class);
                             startActivity(intent);
@@ -144,6 +166,7 @@ public class SignupPage extends AppCompatActivity{
     {
         firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
         auth = FirebaseAuth.getInstance();
+        storage = FirebaseStorage.getInstance();
     }
     private void findViews()
     {

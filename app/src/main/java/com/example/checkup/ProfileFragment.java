@@ -15,6 +15,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.module.AppGlideModule;
+import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
@@ -25,6 +28,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.ktx.Firebase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,11 +38,14 @@ import com.google.firebase.ktx.Firebase;
  */
 public class ProfileFragment extends Fragment {
     private static final String PHONE_DB_NAME = "PhoneNumbers";
+    private static final String PROFILE_IMG_STORAGE = "ProfileImages";
 
     MaterialButton addPhoneBtn;
     FirebaseAuth auth;
 
     FirebaseDatabase firebaseDatabase;
+
+    FirebaseStorage storage;
 
     TextView nameTxt;
     TextView emailTxt;
@@ -55,7 +63,7 @@ public class ProfileFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public ProfileFragment() {
+    public ProfileFragment(){
         // Required empty public constructor
     }
 
@@ -107,7 +115,18 @@ public class ProfileFragment extends Fragment {
     {
         String name = user.getDisplayName();
         String mail = user.getEmail();
-        Uri imageURI = user.getPhotoUrl();
+        StorageReference storage_reference = storage.getReference().child(PROFILE_IMG_STORAGE).child(name+".jpg");
+
+        storage_reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                Glide.with(ProfileFragment.this)
+                        .load(uri)
+                        .error(R.drawable.ic_launcher_background)
+                        .circleCrop()
+                        .into(profileIMG);
+            }
+        });
 
         nameTxt.setText(name);
         emailTxt.setText(mail);
@@ -186,6 +205,7 @@ public class ProfileFragment extends Fragment {
     {
         firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
         auth = FirebaseAuth.getInstance();
+        storage = FirebaseStorage.getInstance();
     }
 
 
