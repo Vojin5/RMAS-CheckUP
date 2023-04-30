@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
@@ -101,7 +102,8 @@ public class MainPage extends AppCompatActivity implements
                 fragment = new HomeFragment();
                 break;
             case R.id.menu_map:
-                //IMPLEMENT
+                Intent intent = new Intent(MainPage.this,MapsActivity.class);
+                startActivity(intent);
                 break;
             case R.id.menu_profile:
                 fragment = new ProfileFragment();

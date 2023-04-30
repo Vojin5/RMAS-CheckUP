@@ -25,4 +25,6 @@
     <string name="yourphone">Yourphone</string>
     <string name="yourpoints">Yourpoints</string>
     <string name="add_number">Add Number</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="enter_address">Enter Address</string>
 </resources>
