@@ -30,7 +30,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="10dp"
             android:src="@drawable/ic_search"/>
-        
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -45,6 +45,15 @@
             android:imeOptions="actionSearch"
             android:hint="@string/enter_address"/>
     </RelativeLayout>
+
+    <Button
+        android:id="@+id/selectPlaceBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/relLayout1"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:text="Pick Place"/>
     
     <ImageView
         android:layout_width="40dp"

@@ -1,11 +1,17 @@
 package com.example.checkup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,25 +22,38 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.checkup.databinding.ActivityMapsBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -42,6 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private static final int DEFAULT_ZOOM = 15;
+    private static final String KEY = "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
@@ -51,12 +71,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
-    private boolean locationPermissionGranted = false;
+    private boolean locationPermissionGranted = false; //Flag for permissions
 
-    private EditText searchText;
-    private ImageView gps;
+    EditText search; //Search Bar
+    private ImageView gps; //Go to my location
+    private String Address; //Holder for current Addres on display
 
-    FusedLocationProviderClient fusedLocationProviderClient;
+    private Button pickPlaceBtn;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+
+    private ActivityResultLauncher<Intent> startAutocomplete = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent intent = result.getData();
+                    if (intent != null) {
+                        Place place = Autocomplete.getPlaceFromIntent(intent);
+                        Address = place.getAddress();
+                        search.setText(Address);
+                        moveCamera(place.getLatLng(),15f,place.getName());
+                    }
+                } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
+                    // The user canceled the operation.
+                    Log.i(TAG, "User canceled autocomplete");
+                }
+            });
 
 
     @Override
@@ -70,13 +110,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        getLocationPermission();
-        fusedLocationProviderClient = (FusedLocationProviderClient) LocationServices.getFusedLocationProviderClient(this);
 
-        searchText = findViewById(R.id.inputSearch);
-        gps = findViewById(R.id.gps);
-        init();
+        getLocationPermission(); //Permissions for gps
+
+        fusedLocationProviderClient = (FusedLocationProviderClient) LocationServices.getFusedLocationProviderClient(this);
+        Places.initialize(getApplicationContext(),KEY);
+        PlacesClient placesClient = Places.createClient(this);
+
+        findViews();
+
+        initListeners();
         hideSoftKeyboard();
+    }
+
+    private void findViews()
+    {
+        search = findViewById(R.id.inputSearch);
+        gps = findViewById(R.id.gps);
+        pickPlaceBtn = findViewById(R.id.selectPlaceBtn);
     }
 
     @Override
@@ -91,6 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            mMap.getUiSettings().setZoomControlsEnabled(true);
         }
     }
 
@@ -162,37 +214,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void init()
+    private void initListeners()
     {
-        searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_SEARCH ||
-                    actionId == EditorInfo.IME_ACTION_DONE ||
-                    event.getAction() == KeyEvent.ACTION_DOWN ||
-                        event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                    geoLocate();
-                }
-                return false;
-            }
-        });
-
         gps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDeviceLocation();
             }
         });
+
+
+        search.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                startAutocomplete();
+            }
+        });
+
+
     }
 
     private void geoLocate()
     {
-        String searchString = searchText.getText().toString();
         Geocoder geocoder = new Geocoder(MapsActivity.this);
         List<Address> list = new ArrayList<>();
         try{
-            list = geocoder.getFromLocationName(searchString,1);
+            list = geocoder.getFromLocationName(Address,1);
         }
         catch (IOException e)
         {
@@ -210,6 +257,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void hideSoftKeyboard()
     {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    private void startAutocomplete()
+    {
+        // Set the fields to specify which types of place data to
+        // return after the user has made a selection.
+        List<Place.Field> fields = Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG);
+
+        // Start the autocomplete intent.
+        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                .build(this);
+        startAutocomplete.launch(intent);
     }
 
 }
