@@ -46,14 +46,15 @@
             android:hint="@string/enter_address"/>
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/selectPlaceBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/getPlacesButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_below="@id/relLayout1"
-        android:layout_marginTop="10dp"
         android:layout_marginStart="10dp"
-        android:text="Pick Place"/>
+        android:layout_marginTop="10dp"
+        android:src="@drawable/map"/>
+
     
     <ImageView
         android:layout_width="40dp"

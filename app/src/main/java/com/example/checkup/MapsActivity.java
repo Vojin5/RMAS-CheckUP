@@ -11,6 +11,8 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -42,45 +44,51 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.checkup.databinding.ActivityMapsBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.LocationRestriction;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceTypes;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback ,GoogleMap.OnMarkerClickListener{
+
+    //-----------CONSTANTS------------
     private static final String TAG = "MapsActivity";
-
-
     private static final int DEFAULT_ZOOM = 15;
     private static final String KEY = "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
-
-    private GoogleMap mMap;
-    private ActivityMapsBinding binding;
-
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-
+    //---------LOCAL---------
+    private GoogleMap mMap;
+    private ActivityMapsBinding binding;
     private boolean locationPermissionGranted = false; //Flag for permissions
-
     EditText search; //Search Bar
     private ImageView gps; //Go to my location
     private String Address; //Holder for current Addres on display
-
-    private Button pickPlaceBtn;
-
+    private ImageView pickPlaceBtn;
     private FusedLocationProviderClient fusedLocationProviderClient;
-
+    private double currentLat = 0;
+    private double currentLong = 0;
+    private boolean placesClicked = false;
     private ActivityResultLauncher<Intent> startAutocomplete = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -90,7 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Place place = Autocomplete.getPlaceFromIntent(intent);
                         Address = place.getAddress();
                         search.setText(Address);
-                        moveCamera(place.getLatLng(),15f,place.getName());
+                        moveCamera(place.getLatLng(),15f,place.getName(),place.getId());
                     }
                 } else if (result.getResultCode() == Activity.RESULT_CANCELED) {
                     // The user canceled the operation.
@@ -102,7 +110,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -121,13 +128,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         initListeners();
         hideSoftKeyboard();
+
+
     }
 
     private void findViews()
     {
         search = findViewById(R.id.inputSearch);
         gps = findViewById(R.id.gps);
-        pickPlaceBtn = findViewById(R.id.selectPlaceBtn);
+        pickPlaceBtn = findViewById(R.id.getPlacesButton);
     }
 
     @Override
@@ -143,6 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
             mMap.getUiSettings().setZoomControlsEnabled(true);
+            mMap.setOnMarkerClickListener(this);
         }
     }
 
@@ -187,9 +197,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if(task.isSuccessful())
                     {
                         Location currentLocation = (Location) task.getResult();
+                        currentLat = currentLocation.getLatitude();
+                        currentLong = currentLocation.getLongitude();
                         moveCamera(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),
                                 15f
-                        ,"My Location");
+                        ,"My Location","");
                     }
                 }
             });
@@ -200,14 +212,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void moveCamera(LatLng latLng,float zoom,String title)
+    private void moveCamera(LatLng latLng,float zoom,String title,String snippet)
     {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,zoom));
         if(!title.equals("My Location"))
         {
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(latLng)
-                    .title(title);
+                    .title(title)
+                    .snippet(snippet);
             mMap.addMarker(markerOptions);
         }
         hideSoftKeyboard();
@@ -231,28 +244,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startAutocomplete();
+            }
+        });
+
+        pickPlaceBtn.setOnClickListener(new View.OnClickListener() {
+            //List<String> types = Arrays.asList("cafe","restaurant","night_club","casino","bar");
+            @Override
+            public void onClick(View v) {
+                if(placesClicked)
+                {
+                    placesClicked = false;
+                    mMap.clear();
+                    return;
+                }
+                placesClicked = true;
+                String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location="
+                        + currentLat
+                        + "," + currentLong
+                        + "&radius=5000" //CHANGE LATER
+                        + "&type="
+                        + "cafe"
+                        + "&sensor=true"
+                        + "&key="
+                        + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+
+                new PlaceTask(mMap).execute(url);
+
+                String url2 = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location="
+                        + currentLat
+                        + "," + currentLong
+                        + "&radius=5000" //CHANGE LATER
+                        + "&type="
+                        + "cafe"
+                        + "&sensor=true"
+                        + "&key="
+                        + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+
+                new PlaceTask(mMap).execute(url2);
+
+            }
+        });
 
     }
 
-    private void geoLocate()
-    {
-        Geocoder geocoder = new Geocoder(MapsActivity.this);
-        List<Address> list = new ArrayList<>();
-        try{
-            list = geocoder.getFromLocationName(Address,1);
-        }
-        catch (IOException e)
-        {
-            Log.d(TAG,e.getMessage());
-        }
-        if(list.size() > 0)
-        {
-            Address address = list.get(0);
-            moveCamera(new LatLng(address.getLatitude(),address.getLongitude())
-                    ,15f
-            ,address.getAddressLine(0));
-        }
-    }
 
     private void hideSoftKeyboard()
     {
@@ -263,12 +303,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
         // Set the fields to specify which types of place data to
         // return after the user has made a selection.
-        List<Place.Field> fields = Arrays.asList(Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG);
-
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID,Place.Field.ADDRESS, Place.Field.NAME,Place.Field.LAT_LNG);
+        List<String> types = Arrays.asList("cafe","restaurant","night_club","casino","bar");
         // Start the autocomplete intent.
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
+                .setTypesFilter(types)
                 .build(this);
         startAutocomplete.launch(intent);
     }
 
-}
+    @Override
+    public boolean onMarkerClick(@NonNull Marker marker) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Potvrda");
+        builder.setMessage("Da li zelite da dodate ovaj objekat u feed : " + marker.getTitle());
+
+        builder.setPositiveButton("DA", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing but close the dialog
+                DatabaseReference reference = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app").getReference();
+                reference.child("Places")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                        .child(marker.getSnippet())
+                        .setValue(true);
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("NE", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                // Do nothing
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
+        return true;
+    }}

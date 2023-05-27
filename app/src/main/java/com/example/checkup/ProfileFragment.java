@@ -1,10 +1,14 @@
 package com.example.checkup;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.Dialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -18,8 +22,10 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.module.AppGlideModule;
 import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,15 +36,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.ktx.Firebase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ProfileFragment extends Fragment {
     private static final String PHONE_DB_NAME = "PhoneNumbers";
     private static final String PROFILE_IMG_STORAGE = "ProfileImages";
+    public static final int PICK_IMAGE = 2;
 
     MaterialButton addPhoneBtn;
     FirebaseAuth auth;
@@ -51,47 +56,18 @@ public class ProfileFragment extends Fragment {
     TextView emailTxt;
     TextView phoneTxt;
     TextView pointsTxt;
-    ImageView profileIMG;
-
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    CircleImageView profileIMG;
+    MaterialButton AddPhotoBtn;
+    Uri imageURI;
 
     public ProfileFragment(){
-        // Required empty public constructor
-    }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ProfileFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(String param1, String param2) {
-        ProfileFragment fragment = new ProfileFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
 
     }
 
@@ -106,8 +82,8 @@ public class ProfileFragment extends Fragment {
         setUI(user);
 
 
-
         addPhoneBtn.setOnClickListener(this::showPhoneDialog);
+        AddPhotoBtn.setOnClickListener(this::addPhoto);
         return view;
     }
 
@@ -149,7 +125,7 @@ public class ProfileFragment extends Fragment {
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Error getting number", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Please add number", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -162,6 +138,40 @@ public class ProfileFragment extends Fragment {
         phoneTxt = view.findViewById(R.id.phone_display);
         pointsTxt = view.findViewById(R.id.point_display);
         profileIMG = view.findViewById(R.id.profile_image);
+        AddPhotoBtn = view.findViewById(R.id.add_photo_btn);
+    }
+
+    private void addPhoto(View view)
+    {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            imageURI = data.getData();
+            if(imageURI == null)
+            {
+                Toast.makeText(getActivity(), "Error adding photo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            profileIMG.setImageURI(imageURI);
+
+            storage.getReference()
+                    .child(PROFILE_IMG_STORAGE)
+                    .child(auth.getCurrentUser().getDisplayName()+".jpg")
+                    .putFile(imageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            Toast.makeText(getActivity(), "Photo added successfully", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+        }
     }
 
     private void showPhoneDialog(View view)
@@ -203,7 +213,8 @@ public class ProfileFragment extends Fragment {
 
     private void setFirebase()
     {
-        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+        firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app/");
+        //firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
         auth = FirebaseAuth.getInstance();
         storage = FirebaseStorage.getInstance();
     }
