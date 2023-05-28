@@ -2,6 +2,7 @@ package com.example.checkup;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -191,6 +192,7 @@ public class ProfileFragment extends Fragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.phone_dialog);
+        dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
 
         TextInputEditText phoneTxt = dialog.findViewById(R.id.phone_input);
         MaterialButton applyBtn = dialog.findViewById(R.id.dialog_apply);
