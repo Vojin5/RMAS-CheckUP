@@ -92,42 +92,53 @@ public class ProfileFragment extends Fragment {
         String name = user.getDisplayName();
         String mail = user.getEmail();
         StorageReference storage_reference = storage.getReference().child(PROFILE_IMG_STORAGE).child(name+".jpg");
+        if(getActivity() == null)
+        {
+            return;
+        }
 
         storage_reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
+                if(getActivity() == null)
+                {
+                    return;
+                }
                 Glide.with(ProfileFragment.this)
                         .load(uri)
                         .error(R.drawable.ic_launcher_background)
                         .circleCrop()
                         .into(profileIMG);
+
+                nameTxt.setText(name);
+                emailTxt.setText(mail);
+
+                DatabaseReference reference = firebaseDatabase.getReference();
+                reference.child(PHONE_DB_NAME)
+                        .child(user.getDisplayName())
+                        .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                            @Override
+                            public void onSuccess(DataSnapshot snapshot) {
+                                if(snapshot.exists())
+                                {
+                                    PhoneNumbers phone = snapshot.getValue(PhoneNumbers.class);
+                                    phoneTxt.setText(phone.getPhone());
+                                }
+                                else{
+                                    phoneTxt.setText("not added yet");
+                                }
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getContext(), "Please add number", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
             }
         });
 
-        nameTxt.setText(name);
-        emailTxt.setText(mail);
 
-        DatabaseReference reference = firebaseDatabase.getReference();
-        reference.child(PHONE_DB_NAME)
-                .child(user.getDisplayName())
-                .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
-                    @Override
-                    public void onSuccess(DataSnapshot snapshot) {
-                        if(snapshot.exists())
-                        {
-                            PhoneNumbers phone = snapshot.getValue(PhoneNumbers.class);
-                            phoneTxt.setText(phone.getPhone());
-                        }
-                        else{
-                            phoneTxt.setText("not added yet");
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Please add number", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     private void findViews(View view)

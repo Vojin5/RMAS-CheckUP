@@ -69,7 +69,9 @@ public class HomeFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.requireContext()));
 
-        List placeFields = Arrays.asList(Place.Field.NAME,
+        List placeFields = Arrays.asList(
+                Place.Field.ID,
+                Place.Field.NAME,
                 Place.Field.ICON_URL,
                 Place.Field.ADDRESS,
                 Place.Field.CURRENT_OPENING_HOURS,
@@ -95,6 +97,11 @@ public class HomeFragment extends Fragment {
                         placesClient.fetchPlace(request).addOnSuccessListener((response) ->
                         {
                             Place place = response.getPlace();
+                            if(place == null)
+                            {
+                                Toast.makeText(getContext(), "Error : place cannot be loaded", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
                             int position = places.size();
                             places.add(place);
                             adapter.notifyItemInserted(position);

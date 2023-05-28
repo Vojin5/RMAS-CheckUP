@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FF9800">
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/view"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center_horizontal"
+        app:layout_constraintEnd_toEndOf="@id/view"
+        android:layout_marginTop="50dp">
+
+        <ImageView
+            android:id="@+id/star1"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/empty_star" />
+        <ImageView
+            android:id="@+id/star2"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/empty_star" />
+        <ImageView
+            android:id="@+id/star3"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/empty_star" />
+        <ImageView
+            android:id="@+id/star4"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/empty_star" />
+        <ImageView
+            android:id="@+id/star5"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/empty_star" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/placeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/yanone_medium"
+        android:text="Place name"
+        app:layout_constraintStart_toStartOf="@id/view"
+        android:textSize="32sp"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="@id/view"
+        app:layout_constraintTop_toBottomOf="@id/layout"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/stars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textSize="32sp"
+        android:fontFamily="@font/yanone_medium"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="@id/view"
+        app:layout_constraintEnd_toEndOf="@id/view"
+        app:layout_constraintTop_toBottomOf="@id/placeName"/>
+
+    <Button
+        android:id="@+id/rateButton"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="40dp"
+        android:backgroundTint="#FF5722"
+        android:text="Rate"
+        app:layout_constraintBottom_toBottomOf="@id/view"
+        app:layout_constraintStart_toStartOf="@id/view"
+        app:layout_constraintTop_toBottomOf="@+id/stars" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="40dp"
+        android:backgroundTint="#FF5722"
+        android:text="Cancel"
+        app:layout_constraintBottom_toBottomOf="@id/view"
+        app:layout_constraintEnd_toEndOf="@id/view"
+        app:layout_constraintTop_toBottomOf="@+id/stars" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

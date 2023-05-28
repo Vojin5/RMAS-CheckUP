@@ -83,6 +83,39 @@
                 app:layout_constraintStart_toStartOf="@+id/placePhoto"
                 app:layout_constraintTop_toBottomOf="@+id/placeOpenHours" />
 
+            <LinearLayout
+                android:id="@+id/price_values"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginStart="20dp"
+                app:layout_constraintStart_toEndOf="@+id/placeIcon"
+                app:layout_constraintTop_toBottomOf="@+id/placeOpen">
+
+                <ImageView
+                    android:id="@+id/dollar_one"
+                    android:layout_width="25dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/dollar"
+                    app:layout_constraintStart_toEndOf="@+id/placeIcon"
+                    app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
+
+
+                <ImageView
+                    android:id="@+id/dollar_two"
+                    android:layout_width="25dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/dollar"
+                    app:layout_constraintStart_toEndOf="@+id/dollar_one"
+                    app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
+
+                <ImageView
+                    android:id="@+id/dollar_three"
+                    android:layout_width="25dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/dollar"
+                    app:layout_constraintStart_toEndOf="@+id/dollar_two"
+                    app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
+            </LinearLayout>
             <ImageView
                 android:id="@+id/placeIcon"
                 android:layout_width="50dp"
@@ -92,38 +125,84 @@
                 app:layout_constraintStart_toStartOf="@+id/placePhoto"
                 app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
 
+
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/placeAvailable"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="10dp"
-                app:layout_constraintEnd_toEndOf="@+id/placePhoto"
-                app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/google_rating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Available Seats"
-                android:textSize="25sp"
                 android:fontFamily="@font/yanone_medium"
+                android:text="5.00"
                 android:textColor="@color/white"
-                app:layout_constraintEnd_toStartOf="@+id/placeAvailable"
-                app:layout_constraintStart_toEndOf="@+id/placeIcon"
-                app:layout_constraintTop_toBottomOf="@+id/placeOpen" />
+                android:layout_marginStart="20dp"
+                android:textSize="25sp"
+                app:layout_constraintBottom_toBottomOf="@+id/price_values"
+                app:layout_constraintStart_toEndOf="@id/price_values"
+                app:layout_constraintTop_toTopOf="@+id/price_values" />
+
+            <TextView
+                android:id="@+id/yourlabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/yanone_medium"
+                android:text="Your :"
+                android:textColor="@color/white"
+                android:textSize="25sp"
+                android:layout_marginStart="25dp"
+                app:layout_constraintBottom_toBottomOf="@+id/google_rating"
+                app:layout_constraintStart_toEndOf="@id/google_rating"
+                app:layout_constraintTop_toTopOf="@+id/google_rating" />
+
+            <TextView
+                android:id="@+id/userRate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:fontFamily="@font/yanone_medium"
+                android:text="5.0"
+                android:textColor="@color/white"
+                android:textSize="25sp"
+                app:layout_constraintBottom_toBottomOf="@+id/yourlabel"
+                app:layout_constraintStart_toEndOf="@id/yourlabel"
+                app:layout_constraintTop_toTopOf="@+id/yourlabel" />
 
             <Button
                 android:id="@+id/placeReserveButton"
-                android:layout_width="wrap_content"
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Reserve"
                 android:layout_marginBottom="10dp"
+                android:text="Reserve"
+                android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/placeAvailable"
-                app:layout_constraintStart_toEndOf="@+id/placeIcon"
-                app:layout_constraintTop_toBottomOf="@+id/textView" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/placeIcon" />
+
+            <Button
+                android:id="@+id/placeDelete"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="20dp"
+                android:text="Delete Place"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/placeReserveButton" />
+
+            <Button
+                android:id="@+id/addRating"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Add Rating"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/placeReserveButton"
+                app:layout_constraintTop_toTopOf="@+id/placeReserveButton" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
