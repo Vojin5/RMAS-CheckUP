@@ -27,6 +27,7 @@
                 android:layout_height="200dp"
                 android:layout_marginTop="25dp"
                 android:src="@color/purple_200"
+                android:clickable="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -202,6 +203,8 @@
                 android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/placeReserveButton" />
+
+
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
