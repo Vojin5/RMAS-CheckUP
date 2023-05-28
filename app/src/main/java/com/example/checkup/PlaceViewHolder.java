@@ -37,7 +37,7 @@ public class PlaceViewHolder extends RecyclerView.ViewHolder {
     ImageView placeIcon;
     CircleImageView placeAvailable;
     Button placeReserve;
-    Button placeDelete;
+    ImageView placeDelete;
     ImageView dollar1;
     ImageView dollar2;
     ImageView dollar3;

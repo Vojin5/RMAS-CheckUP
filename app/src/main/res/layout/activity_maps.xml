@@ -55,6 +55,15 @@
         android:layout_marginTop="10dp"
         android:src="@drawable/map"/>
 
+    <ImageView
+        android:id="@+id/filter_maps"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/filter"
+        android:layout_below="@id/getPlacesButton"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"/>
+
     
     <ImageView
         android:layout_width="40dp"

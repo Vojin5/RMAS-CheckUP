@@ -10,8 +10,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,8 +27,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,10 +89,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ImageView gps; //Go to my location
     private String Address; //Holder for current Addres on display
     private ImageView pickPlaceBtn;
+    private ImageView filterButton;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private double currentLat = 0;
     private double currentLong = 0;
     private boolean placesClicked = false;
+    private int radius = 2500;
+
+    private boolean cafe = true;
+    private boolean restaurant = true;
+    private boolean night_club = true;
+    private boolean bar = true;
+    private boolean casino = true;
     private ActivityResultLauncher<Intent> startAutocomplete = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -137,6 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         search = findViewById(R.id.inputSearch);
         gps = findViewById(R.id.gps);
         pickPlaceBtn = findViewById(R.id.getPlacesButton);
+        filterButton = findViewById(R.id.filter_maps);
     }
 
     @Override
@@ -266,28 +279,180 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         + "?location="
                         + currentLat
                         + "," + currentLong
-                        + "&radius=5000" //CHANGE LATER
+                        + "&radius="
+                        + String.valueOf(radius)
                         + "&type="
                         + "cafe"
                         + "&sensor=true"
                         + "&key="
                         + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+                if(cafe)
+                {
+                    new PlaceTask(mMap).execute(url);
+                }
 
-                new PlaceTask(mMap).execute(url);
 
                 String url2 = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
                         + "?location="
                         + currentLat
                         + "," + currentLong
-                        + "&radius=5000" //CHANGE LATER
+                        + "&radius="
+                        + String.valueOf(radius)
                         + "&type="
-                        + "cafe"
+                        + "restaurant"
                         + "&sensor=true"
                         + "&key="
                         + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+                if(restaurant)
+                {
+                    new PlaceTask(mMap).execute(url2);
+                }
 
-                new PlaceTask(mMap).execute(url2);
+                String url3 = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location="
+                        + currentLat
+                        + "," + currentLong
+                        + "&radius="
+                        + String.valueOf(radius)
+                        + "&type="
+                        + "night_club"
+                        + "&sensor=true"
+                        + "&key="
+                        + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+                if(night_club)
+                {
+                    new PlaceTask(mMap).execute(url3);
+                }
 
+                String url4 = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location="
+                        + currentLat
+                        + "," + currentLong
+                        + "&radius="
+                        + String.valueOf(radius)
+                        + "&type="
+                        + "casino"
+                        + "&sensor=true"
+                        + "&key="
+                        + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+                if(casino)
+                {
+                    new PlaceTask(mMap).execute(url4);
+                }
+
+                String url5 = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+                        + "?location="
+                        + currentLat
+                        + "," + currentLong
+                        + "&radius="
+                        + String.valueOf(radius)
+                        + "&type="
+                        + "bar"
+                        + "&sensor=true"
+                        + "&key="
+                        + "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
+                if(bar)
+                {
+                    new PlaceTask(mMap).execute(url5);
+                }
+            }
+        });
+
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Dialog dialog = new Dialog(MapsActivity.this);
+                dialog.setTitle("Filter Maps");
+                dialog.setCancelable(true);
+                dialog.setContentView(R.layout.filter_maps_dialog);
+                dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+                CheckBox cafeCheck = dialog.findViewById(R.id.cafe_check);
+                CheckBox restaurantCheck = dialog.findViewById(R.id.restaurant_check);
+                CheckBox barCheck = dialog.findViewById(R.id.bar_check);
+                CheckBox night_clubCheck = dialog.findViewById(R.id.night_club_check);
+                CheckBox casinoCheck = dialog.findViewById(R.id.casino_check);
+                SeekBar seekbar = dialog.findViewById(R.id.seekbar);
+                TextView display = dialog.findViewById(R.id.range_display);
+                Button confirm = dialog.findViewById(R.id.confirm_filter);
+                Button cancel = dialog.findViewById(R.id.cancel_filter);
+
+                cafeCheck.setChecked(cafe);
+                restaurantCheck.setChecked(restaurant);
+                barCheck.setChecked(bar);
+                night_clubCheck.setChecked(night_club);
+                casinoCheck.setChecked(casino);
+                seekbar.setProgress(radius);
+                display.setText(String.valueOf(radius));
+
+                confirm.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(cafeCheck.isChecked())
+                        {
+                            cafe = true;
+                        }
+                        else{
+                            cafe = false;
+                        }
+                        if(restaurantCheck.isChecked())
+                        {
+                            restaurant = true;
+                        }
+                        else{
+                            restaurant = false;
+                        }
+                        if(barCheck.isChecked())
+                        {
+                            bar = true;
+                        }
+                        else{
+                            bar = false;
+                        }
+                        if(night_clubCheck.isChecked())
+                        {
+                            night_club = true;
+                        }
+                        else{
+                            night_club = false;
+                        }
+                        if(casinoCheck.isChecked())
+                        {
+                            casino = true;
+                        }
+                        else{
+                            casino = false;
+                        }
+                        radius = Integer.parseInt(display.getText().toString());
+                        dialog.dismiss();
+                    }
+                });
+                seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        progress = ((int)Math.round(progress/100))*100;
+                        seekBar.setProgress(progress);
+                        display.setText(progress + "");
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+                dialog.show();
             }
         });
 

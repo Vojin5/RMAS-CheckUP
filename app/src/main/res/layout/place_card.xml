@@ -178,29 +178,29 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:text="Reserve"
+                android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/placeIcon" />
+                app:layout_constraintTop_toBottomOf="@+id/placeDelete" />
 
-            <Button
+            <ImageView
                 android:id="@+id/placeDelete"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:layout_marginStart="20dp"
-                android:text="Delete Place"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/delete_button"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/placeReserveButton" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/placeIcon"/>
+
 
             <Button
                 android:id="@+id/addRating"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:text="Add Rating"
+                android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/placeReserveButton"
                 app:layout_constraintTop_toTopOf="@+id/placeReserveButton" />
 
 
