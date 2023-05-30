@@ -44,6 +44,7 @@ import com.google.firebase.storage.StorageReference;
 
 import org.w3c.dom.Text;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -147,8 +148,8 @@ public class PlaceViewHolder extends RecyclerView.ViewHolder {
                 reference.child("Points")
                         .child("Reservations")
                         .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
-                        .push().setValue(timeStamp);
-
+                        .child(places.get(getAdapterPosition()).getId())
+                        .setValue(timeStamp);
             }
         });
         cancel.setOnClickListener(new View.OnClickListener() {

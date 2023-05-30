@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,6 +67,7 @@ public class HomeFragment extends Fragment {
     PlaceAdapter adapter;
     RecyclerView recyclerView;
     FloatingActionButton addPhotoButton;
+    FloatingActionButton reservationsButton;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -84,6 +86,7 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_home, container, false);
         recyclerView = view.findViewById(R.id.recycler_home);
+        reservationsButton = view.findViewById(R.id.floating_id);
         addPhotoButton = view.findViewById(R.id.floating_add_photo);
         adapter = new PlaceAdapter(getContext(),places);
         recyclerView.setAdapter(adapter);
@@ -200,6 +203,58 @@ public class HomeFragment extends Fragment {
                     }
                 });
                 dialog.show();
+            }
+        });
+
+        reservationsButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                List<String> times = new ArrayList<>();
+                List<Place> adapterPlaces = new ArrayList<>();
+
+
+                Dialog dialog = new Dialog(getContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setCancelable(true);
+                dialog.setContentView(R.layout.reservations_dialog_layout);
+                dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+                ReservationAdapter adapter1 = new ReservationAdapter(getContext(),adapterPlaces,times);
+                RecyclerView recyclerView1 = dialog.findViewById(R.id.reservationsRecycler);
+                recyclerView1.setLayoutManager(new LinearLayoutManager(getContext()));
+                recyclerView1.setAdapter(adapter1);
+
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+                DatabaseReference reference = firebaseDatabase.getReference();
+                reference.child("Points")
+                        .child("Reservations")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                        .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                            @Override
+                            public void onSuccess(DataSnapshot dataSnapshot) {
+                                for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                                {
+                                    String placeID = snapshot.getKey();
+                                    System.out.println(placeID);
+                                    for(Place p : places)
+                                    {
+                                        if(p.getId().equals(placeID))
+                                        {
+                                            adapterPlaces.add(p);
+                                            break;
+                                        }
+                                    }
+                                    int position = times.size();
+                                    times.add(snapshot.getValue(String.class));
+                                    adapter1.notifyItemInserted(position);
+                                }
+                            }
+                        });
+
+                dialog.show();
+
             }
         });
         return  view;
