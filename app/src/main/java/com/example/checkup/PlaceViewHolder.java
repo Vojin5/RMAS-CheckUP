@@ -2,19 +2,24 @@ package com.example.checkup;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -27,6 +32,8 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.FetchPhotoResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
@@ -37,7 +44,10 @@ import com.google.firebase.storage.StorageReference;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -67,6 +77,9 @@ public class PlaceViewHolder extends RecyclerView.ViewHolder {
 
     int photoIterator = 0;
     boolean loaded = false;
+    Button addCommentButton;
+    Button commentsButton;
+    boolean available = false;
 
 
     public PlaceViewHolder(@NonNull View itemView,Context context,PlaceAdapter adapter,List<Place> places) {
@@ -90,11 +103,142 @@ public class PlaceViewHolder extends RecyclerView.ViewHolder {
         addRatingButton = itemView.findViewById(R.id.addRating);
         googleRating = itemView.findViewById(R.id.google_rating);
         userRating = itemView.findViewById(R.id.userRate);
+        addCommentButton = itemView.findViewById(R.id.addCommentButton);
+        commentsButton = itemView.findViewById(R.id.commentsButton);
 
         addRatingButton.setOnClickListener(this::addRating);
         placeDelete.setOnClickListener(this::deletePlace);
         placeImage.setOnClickListener(this::changeImage);
+        addCommentButton.setOnClickListener(this::addComment);
+        commentsButton.setOnClickListener(this::seeComments);
+        placeReserve.setOnClickListener(this::reservePlace);
 
+    }
+
+    private void reservePlace(View view)
+    {
+        if(!available)
+        {
+            Toast.makeText(context, "This Place has no available seats,try again later", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.reservation_layout);
+        dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+        NumberPicker numberPicker = dialog.findViewById(R.id.numberPicker);
+        numberPicker.setMinValue(1);
+        numberPicker.setMaxValue(6);
+        Button ConfirmReserve = dialog.findViewById(R.id.reserveDialogButton);
+        Button cancel = dialog.findViewById(R.id.cancelDialogButton);
+        TextView Name = dialog.findViewById(R.id.reservationName);
+        Name.setText(places.get(getAdapterPosition()).getName());
+
+        ConfirmReserve.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, "Check Your Reservations for the ID", Toast.LENGTH_LONG).show();
+                dialog.dismiss();
+                String timeStamp = new SimpleDateFormat("dd.MM.yyyy. - HH:mm:ss").format(Calendar.getInstance().getTime());
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+                DatabaseReference reference = firebaseDatabase.getReference();
+                reference.child("Points")
+                        .child("Reservations")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                        .push().setValue(timeStamp);
+
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
+            }
+        });
+        dialog.show();
+    }
+
+    private void seeComments(View view)
+    {
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.comment_dialog_layout);
+        dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+        List<String> names = new ArrayList<>();
+        List<String> comments = new ArrayList<>();
+        CommentAdapter adapter1 = new CommentAdapter(context,names,comments);
+        RecyclerView recyclerView = dialog.findViewById(R.id.recyclerComments);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setAdapter(adapter1);
+
+
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+        DatabaseReference reference = firebaseDatabase.getReference();
+        reference.child("Comments")
+                .child(places.get(getAdapterPosition()).getId())
+                .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                    @Override
+                    public void onSuccess(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                        {
+                            int position = names.size();
+                            names.add(snapshot.getKey());
+
+                            comments.add(snapshot.getValue(String.class));
+                            adapter1.notifyItemInserted(position);
+                        }
+                    }
+                });
+        dialog.show();
+
+    }
+
+    private void addComment(View view)
+    {
+        Dialog dialog = new Dialog(context);
+        dialog.setTitle("Add Comment");
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.add_comment_dialog);
+        dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+        TextInputEditText comment = dialog.findViewById(R.id.comment);
+        Button confirm = dialog.findViewById(R.id.addCommentbutton);
+        Button cancel = dialog.findViewById(R.id.comment_cancel);
+
+        confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(comment.getText().equals(""))
+                {
+                    Toast.makeText(context, "Please enter comment", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://checkup-f6ce4-default-rtdb.europe-west1.firebasedatabase.app");
+                DatabaseReference reference = firebaseDatabase.getReference();
+                reference.child("Points")
+                        .child("Comments")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                        .child(places.get(getAdapterPosition()).getId())
+                        .setValue(comment.getText().toString());
+                dialog.dismiss();
+
+                reference.child("Comments")
+                        .child(places.get(getAdapterPosition()).getId())
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                        .setValue(comment.getText().toString());
+            }
+        });
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
+            }
+        });
+        dialog.show();
     }
 
     private void changeImage(View view)

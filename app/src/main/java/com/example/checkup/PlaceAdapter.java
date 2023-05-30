@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.Random;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceViewHolder> {
     private static final String KEY = "AIzaSyCQIixnPlJGSN7LYFaK3oekf7SOx12ATtM";
@@ -82,7 +83,17 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceViewHolder> {
         else{
             holder.placeOpen.setText("Closed");
         }
-        holder.placeAvailable.setImageDrawable(new ColorDrawable(Color.GREEN));
+        Random random = new Random();
+        if(random.nextInt(1000) % 2 == 0)
+        {
+            holder.placeAvailable.setImageDrawable(new ColorDrawable(Color.GREEN));
+            holder.available = true;
+        }
+        else{
+            holder.placeAvailable.setImageDrawable(new ColorDrawable(Color.RED));
+            holder.available = false;
+        }
+
         if(place.getIconUrl() == null || place.getIconUrl().equals(""))
         {
             holder.placeIcon.setImageResource(R.drawable.coffee);

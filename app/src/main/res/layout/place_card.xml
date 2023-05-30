@@ -131,8 +131,10 @@
                 android:id="@+id/placeAvailable"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
+                app:layout_constraintBottom_toBottomOf="@+id/textView"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toEndOf="@+id/textView"
+                app:layout_constraintTop_toTopOf="@+id/textView" />
 
             <TextView
                 android:id="@+id/google_rating"
@@ -177,9 +179,8 @@
                 android:id="@+id/placeReserveButton"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="20dp"
                 android:text="Reserve"
-                android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -187,12 +188,26 @@
 
             <ImageView
                 android:id="@+id/placeDelete"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="50dp"
                 android:background="@drawable/delete_button"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/placeIcon"/>
+                app:layout_constraintTop_toBottomOf="@id/placeIcon" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:fontFamily="@font/yanone_medium"
+                android:text="Available Seats:"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/placeDelete"
+                app:layout_constraintStart_toEndOf="@id/placeDelete"
+                app:layout_constraintTop_toTopOf="@+id/placeDelete" />
 
 
             <Button
@@ -203,6 +218,27 @@
                 android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/placeReserveButton" />
+
+            <Button
+                android:id="@+id/addCommentButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="Add Comment"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/placeReserveButton" />
+
+            <Button
+                android:id="@+id/commentsButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="Comments"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginEnd="20dp"/>
 
 
 
