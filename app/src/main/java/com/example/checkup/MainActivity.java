@@ -28,9 +28,6 @@ import com.google.firebase.database.ValueEventListener;
 public class MainActivity extends AppCompatActivity {
 
     // TODO: Leaderboard
-    // TODO: Profile point read
-    // TODO: Reserve Logic
-    // TODO: ID-s
     private static final String TAG = "MainActivity";
     //checkup-385309
     //AIzaSyB8CLKSAhaamioA1U62or5CLQbUqxs5YyM

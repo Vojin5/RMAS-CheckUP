@@ -5,6 +5,7 @@ import static android.app.Activity.RESULT_OK;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,12 +41,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.List;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
     private static final String PHONE_DB_NAME = "PhoneNumbers";
     private static final String PROFILE_IMG_STORAGE = "ProfileImages";
     public static final int PICK_IMAGE = 2;
+    int points = 0;
 
     MaterialButton addPhoneBtn;
     FirebaseAuth auth;
@@ -60,6 +65,7 @@ public class ProfileFragment extends Fragment {
     CircleImageView profileIMG;
     MaterialButton AddPhotoBtn;
     Uri imageURI;
+    ImageView infoButton;
 
     public ProfileFragment(){
 
@@ -139,6 +145,73 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Dialog dialog = new Dialog(getContext());
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setCancelable(true);
+                dialog.setContentView(R.layout.profile_info_dialog);
+                dialog.getWindow().getAttributes().width = ActionBar.LayoutParams.FILL_PARENT;
+
+                Button cancel = dialog.findViewById(R.id.infoDialogCancel);
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+
+                dialog.show();
+
+            }
+        });
+
+        DatabaseReference reference = firebaseDatabase.getReference();
+        reference.child("Points")
+                .get().addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                    @Override
+                    public void onSuccess(DataSnapshot dataSnapshot) {
+                        String user = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                        for(DataSnapshot snapshot : dataSnapshot.getChildren())
+                        {
+                            Iterable<DataSnapshot> users = snapshot.getChildren();
+                            for(DataSnapshot snapshot1 : users)
+                            {
+                                if(user.equals(snapshot1.getKey()))
+                                {
+                                    for (DataSnapshot sn : snapshot1.getChildren())
+                                    {
+                                        points += 20;
+                                    }
+                                }
+                            }
+                        }
+                        pointsTxt.setText(String.valueOf(points));
+                        if(points>100)
+                        {
+                            profileIMG.setBorderColor(Color.parseColor("#6AFF00"));
+                        }
+                        else if(points > 200)
+                        {
+                            profileIMG.setBorderColor(Color.parseColor("#00BCD4"));
+                        }
+                        else if(points > 300)
+                        {
+                            profileIMG.setBorderColor(Color.parseColor("#FF5722"));
+                        }
+                        else if(points > 400)
+                        {
+                            profileIMG.setBorderColor(Color.parseColor("#9C27B0"));
+                        }
+
+                        reference.child("Leaderboard")
+                                .child(FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                                .setValue(points);
+                    }
+                });
+
+
 
     }
 
@@ -151,6 +224,7 @@ public class ProfileFragment extends Fragment {
         pointsTxt = view.findViewById(R.id.point_display);
         profileIMG = view.findViewById(R.id.profile_image);
         AddPhotoBtn = view.findViewById(R.id.add_photo_btn);
+        infoButton = view.findViewById(R.id.infoButton);
     }
 
     private void addPhoto(View view)
