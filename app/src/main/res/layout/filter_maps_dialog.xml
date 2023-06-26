@@ -70,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/yanone_medium"
-        android:text="Night Club"
+        android:text="Casino"
         android:textSize="32sp"
         android:textColor="@color/white"
         android:layout_marginStart="10dp"

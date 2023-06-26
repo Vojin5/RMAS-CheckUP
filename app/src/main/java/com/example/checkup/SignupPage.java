@@ -146,6 +146,11 @@ public class SignupPage extends AppCompatActivity{
                         }
                     }
 
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(SignupPage.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
 
     }
@@ -155,7 +160,7 @@ public class SignupPage extends AppCompatActivity{
     {
         if(TextUtils.isEmpty(str))
         {
-            Toast.makeText(this, "Enter" + name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Enter " + name, Toast.LENGTH_SHORT).show();
             return true;
         }
         return false;
